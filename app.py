@@ -1,5 +1,6 @@
 #write a python code to deploy an flight tickets booking service frontend application
 # app.py
+# app.py
 import streamlit as st
 import pandas as pd
 import datetime
@@ -7,8 +8,10 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import random
+import io
+import base64
 
-# Page configuration
+# Page configuration - MUST BE FIRST STREAMLIT COMMAND
 st.set_page_config(
     page_title="SkyWings Flight Booking",
     page_icon="✈️",
@@ -83,6 +86,8 @@ if 'user_info' not in st.session_state:
     st.session_state.user_info = {}
 if 'search_results' not in st.session_state:
     st.session_state.search_results = []
+if 'page' not in st.session_state:
+    st.session_state.page = "🏠 Home"
 
 # Sample flight data
 def generate_flight_data():
@@ -117,13 +122,21 @@ def generate_flight_data():
     
     return pd.DataFrame(flights)
 
-# Navigation
+# Navigation - Fixed version
 def navigation():
-    st.sidebar.image("✈️", width=50)
-    st.sidebar.title("SkyWings Booking")
+    # Using markdown instead of image for emoji
+    st.sidebar.markdown("""
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h1 style="font-size: 48px; margin: 0;">✈️</h1>
+        <h2 style="color: #1E3A8A; margin: 0;">SkyWings</h2>
+        <p style="color: #666; margin: 0;">Flight Booking</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
     page = st.sidebar.radio(
         "Navigation",
-        ["🏠 Home", "🔍 Find Flights", "📋 My Bookings", "📊 Analytics", "👤 Profile"]
+        ["🏠 Home", "🔍 Find Flights", "📋 My Bookings", "📊 Analytics", "👤 Profile"],
+        index=0
     )
     return page
 
@@ -205,7 +218,7 @@ def home_page():
             st.markdown(f"""
             <div style="text-align: center; padding: 20px; border-radius: 10px; 
                         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
-                <h1>{dest['image']}</h1>
+                <h1 style="font-size: 48px;">{dest['image']}</h1>
                 <h4>{dest['city']}</h4>
                 <p style="color: #3B82F6; font-weight: bold;">From {dest['price']}</p>
             </div>
@@ -314,7 +327,7 @@ def search_flights():
             with col3:
                 st.markdown(f"""
                 <div style="text-align: center;">
-                    <h2 style="color: #3B82F6;">${flight['price']}</h2>
+                    <h2 style="color: #3B82F6;">${flight['price']:.2f}</h2>
                     <p style="font-size: 0.8em;">per passenger</p>
                 </div>
                 """, unsafe_allow_html=True)
@@ -350,7 +363,7 @@ def booking_form():
             <p>🛬 {flight['arrival_time'].strftime('%b %d, %Y %H:%M')}</p>
             <p>⏱️ {str(flight['duration'])[:4]} hours • {flight['class']} Class</p>
             <p>✈️ {flight['aircraft_type']}</p>
-            <h3 style="color: #3B82F6;">Total: ${flight['price']}</h3>
+            <h3 style="color: #3B82F6;">Total: ${flight['price']:.2f}</h3>
         </div>
         """, unsafe_allow_html=True)
     
@@ -460,7 +473,7 @@ def my_bookings():
                         <p><strong>Status:</strong> <span style="color: green;">{booking['status']}</span></p>
                     </div>
                     <div style="text-align: right;">
-                        <h3 style="color: #3B82F6;">${flight['price']}</h3>
+                        <h3 style="color: #3B82F6;">${flight['price']:.2f}</h3>
                         <p>Booked on {booking['booking_date'].strftime('%b %d, %Y')}</p>
                     </div>
                 </div>
@@ -594,11 +607,7 @@ def profile_page():
 
 # Main App
 def main():
-    # Initialize page in session state
-    if 'page' not in st.session_state:
-        st.session_state.page = "🏠 Home"
-    
-    # Navigation
+    # Get current page from navigation
     page = navigation()
     
     # Page routing
