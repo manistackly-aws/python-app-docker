@@ -7,7 +7,7 @@ pipeline {
             steps {
                 echo 'Downloading source code...'
                 git branch: 'main',
-                    url: 'https://github.com/USERNAME/REPOSITORY.git'
+                    url: 'https://github.com/manistackly-aws/python-app-docker.git'
             }
         }
 
